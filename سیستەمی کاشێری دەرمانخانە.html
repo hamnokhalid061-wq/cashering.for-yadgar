@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>سیستەمی کاشێری دەرمانخانە</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef4f1;--card:#fff;--ink:#14302a;--mut:#5f7770;--pri:#0e6b57;--pri2:#d9efe8;--bad:#b3261e;--warn:#a85d00;--line:#cfdcd7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1b18;--card:#16282400;--card:#162824;--ink:#e3f0eb;--mut:#92aca4;--pri:#4cc2a4;--pri2:#1d3a33;--bad:#ff8a80;--warn:#ffb454;--line:#2c4740;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1b18;--card:#162824;--ink:#e3f0eb;--mut:#92aca4;--pri:#4cc2a4;--pri2:#1d3a33;--bad:#ff8a80;--warn:#ffb454;--line:#2c4740;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 'Noto Naskh Arabic',Tahoma,serif;min-height:100%}
+header{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--pri);color:#fff;flex-wrap:wrap}
+header b{font-size:19px}header button{background:#ffffff26;color:#fff;border:0;border-radius:6px;padding:4px 10px;font:inherit}
+nav{display:flex;gap:6px;padding:8px 10px;overflow-x:auto;background:var(--pri2)}
+nav button{white-space:nowrap;border:0;border-radius:8px;padding:6px 14px;font:inherit;background:transparent;color:var(--ink)}
+nav button.on{background:var(--pri);color:#fff}
+main{padding:12px;max-width:1100px;margin:auto}
+.g{display:grid;gap:12px;grid-template-columns:1fr}@media(min-width:800px){.g2{grid-template-columns:1fr 1fr}}
+.c{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+h3{margin:0 0 8px;font-size:17px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 9px;width:100%;margin:2px 0}
+.r{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.r>*{flex:1;min-width:90px}
+button.b{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:7px 14px;font:inherit;cursor:pointer}
+button.s{background:var(--pri2);color:var(--ink);border:0;border-radius:6px;padding:3px 10px;font:inherit;cursor:pointer}
+button.d{background:var(--bad);color:#fff}
+.it{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.m{color:var(--mut);font-size:14px}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.tot{font-size:22px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:15px}td,th{padding:5px;border-bottom:1px solid var(--line);text-align:start}
+.ov{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:9;padding:12px}
+.ov>div{background:var(--card);border-radius:12px;padding:16px;max-width:380px;width:100%;max-height:90%;overflow:auto}
+#rc{white-space:pre-wrap;font-family:monospace;font-size:13px;direction:rtl}
+.cd{text-align:center;padding:24px}.cd .tot{font-size:48px}
+@media print{body *{visibility:hidden}#rc,#rc *{visibility:visible}#rc{position:absolute;inset:0 auto auto 0;color:#000}}
+</style></head><body><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s),A=document.getElementById('app');
+const today=()=>new Date().toISOString().slice(0,10),fm=n=>Math.round(n).toLocaleString('en')+' د.ع';
+function seed(){return{items:[
+{id:1,n:'پاراسیتامۆل 500mg',s:'Paracetamol',bc:'1001',cat:'حەب',buy:500,p:1000,q:120,min:30,ex:'2027-08-01',c:0},
+{id:2,n:'ئەموکسیسیلین شرووب',s:'Amoxicillin',bc:'1002',cat:'شرووب',buy:1500,p:2500,q:8,min:10,ex:'2027-01-10',c:0},
+{id:3,n:'ڤیتامین C',s:'Vitamin C',bc:'1003',cat:'ڤیتامین',buy:700,p:1500,q:40,min:10,ex:'2027-01-20',c:0},
+{id:4,n:'ترامادۆل',s:'Tramadol',bc:'1004',cat:'حەب',buy:1000,p:2000,q:25,min:10,ex:'2028-01-01',c:1}],
+sales:[],exp:[],sup:[],cust:[],log:[],pin:{owner:'0000',cash:'1111'},nid:10}}
+let db;try{db=JSON.parse(localStorage.getItem('rx'))||seed()}catch(e){db=seed()}
+function save(){try{localStorage.setItem('rx',JSON.stringify(db));if(localStorage.getItem('rxd')!==today()){localStorage.setItem('rxb',JSON.stringify(db));localStorage.setItem('rxd',today())}}catch(e){}}
+const log=t=>{db.log.unshift({t:new Date().toLocaleString('en-GB'),u:U,a:t});db.log=db.log.slice(0,300)};
+let U=null,tab='sell',cart=[],Q='',dtype='%',dval=0,custI='',pay='cash',cashAmt=0,bc;
+try{bc=new BroadcastChannel('rx')}catch(e){}
+const norm=s=>(s||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ه/g,'ە');
+function lev(a,b){const d=[];for(let i=0;i<=a.length;i++){d[i]=[i];for(let j=1;j<=b.length;j++)d[i][j]=i?0:j}for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[a.length][b.length]}
+function find(q){q=norm(q.trim());if(!q)return[];return db.items.filter(i=>{const h=[i.n,i.s,i.bc].map(norm);return h.some(x=>x.includes(q))||(q.length>3&&h.some(x=>x.split(' ').some(w=>lev(q,w.slice(0,q.length))<=1)))}).slice(0,8)}
+const isOwner=()=>U=='owner';
+function login(){A.innerHTML=`<main><div class="c" style="max-width:360px;margin:12vh auto"><h3>دەرمانخانە — چوونەژوورەوە</h3><select id="u"><option value="cash">کاشێر</option><option value="owner">خاوەن دەرمانخانە</option></select><input id="p" type="password" inputmode="numeric" placeholder="کۆدی نهێنی" onkeydown="if(event.key=='Enter')go()"><p class="m">کۆدی سەرەتایی: کاشێر 1111 — خاوەن 0000. دوای چوونەژوورەوە لە «ئاسایش» بیگۆڕە.</p><button class="b" onclick="go()">چوونەژوورەوە</button></div></main>`}
+function go(){const u=$('#u').value;if($('#p').value==db.pin[u]){U=u;log('چوونەژوورەوە');save();tab='sell';draw()}else alert('کۆدەکە هەڵەیە')}
+function draw(){if(location.hash=='#customer')return cdraw();if(!U)return login();
+const T=[['sell','فرۆشتن'],['stock','کۆگا'],['debt','قەرز و کڕیار'],['sup','کۆمپانیاکان']];if(isOwner())T.push(['rep','ڕاپۆرت'],['set','ئاسایش']);
+A.innerHTML=`<header><b>دەرمانخانە</b><span>${isOwner()?'خاوەن':'کاشێر'} <button onclick="U=null;draw()">دەرچوون</button> <button onclick="openCust()">شاشەی کڕیار</button></span></header><nav>${T.map(t=>`<button class="${tab==t[0]?'on':''}" onclick="tab='${t[0]}';draw()">${t[1]}</button>`).join('')}</nav><main id="v"></main>`;
+({sell:vSell,stock:vStock,debt:vDebt,sup:vSup,rep:vRep,set:vSet})[tab]();cpost()}
+const sub=()=>cart.reduce((a,l)=>a+l.p*l.q,0);
+function disc(){const s=sub(),c=db.cust[custI];let d=dtype=='%'?s*dval/100:+dval;if(c&&c.disc&&!dval)d=s*c.disc/100;return Math.min(Math.max(d,0),s)}
+const total=()=>sub()-disc();
+function vSell(){const rs=find(Q);
+$('#v').innerHTML=`<div class="g g2"><div class="c"><h3>گەڕان / بارکۆد</h3><input id="q" value="${Q}" placeholder="ناو، ناوی زانستی یان بارکۆد..." oninput="Q=this.value;sres()" onkeydown="if(event.key=='Enter')qenter()"><div id="rs"></div>
+<h3 style="margin-top:12px">فرۆشتنی دەستی</h3><div class="r"><input id="mn" placeholder="ناوی دەرمان"><input id="mp" type="number" placeholder="نرخ"><button class="s" onclick="manual()">زیادکردن</button></div></div>
+<div class="c"><h3>پسووڵە</h3><div id="ct"></div></div></div>
+<div class="c" style="margin-top:12px"><h3>فرۆشتنەکانی ئەمڕۆ</h3>${db.sales.filter(s=>s.d==today()).slice(-8).reverse().map(s=>`<div class="it"><span>#${s.id} — ${fm(s.total)} ${s.ret?'<b class="bad">(گەڕێندراوەتەوە)</b>':''}</span><span><button class="s" onclick="rcpt(${s.id})">پسووڵە</button> ${s.ret?'':`<button class="s" onclick="retn(${s.id})">گەڕاندنەوە</button>`}</span></div>`).join('')||'<p class="m">هێشتا فرۆشتن نییە</p>'}</div>`;sres();ctr()}
+function sres(){$('#rs').innerHTML=find(Q).map(i=>`<div class="it"><span>${i.n}<br><span class="m">${i.s} · ماوە: ${i.q} · ${fm(i.p)}</span></span><button class="s" onclick="add(${i.id})">+</button></div>`).join('')||(Q?'<p class="m">هیچ نەدۆزرایەوە</p>':'')}
+function qenter(){const x=db.items.find(i=>i.bc==Q.trim());if(x){add(x.id);Q='';$('#q').value='';sres()}}
+function add(id){const i=db.items.find(x=>x.id==id);if(i.q<=0)return alert('لە کۆگا نەماوە');if(i.ex<today()&&!confirm('ئەم دەرمانە بەسەرچووە! دڵنیایت؟'))return;
+const l=cart.find(x=>x.id==id);if(l){if(l.q<i.q)l.q++}else{let dr='';if(i.c){dr=prompt('دەرمانی کۆنتڕۆڵکراو — ناوی پزیشک / ژمارەی ڕێکار:');if(!dr)return}cart.push({id,n:i.n,p:i.p,q:1,b:i.buy,dr})}ctr();cpost()}
+function manual(){const n=$('#mn').value,p=+$('#mp').value;if(!n||!p)return;cart.push({id:0,n,p,q:1,b:0,dr:''});ctr();cpost()}
+function ctr(){const el=$('#ct');if(!el)return;const c=db.cust[custI],t=total();
+el.innerHTML=(cart.map((l,k)=>`<div class="it"><span>${l.n}<br><span class="m">${fm(l.p)}</span></span><span class="r" style="flex:none;flex-wrap:nowrap"><button class="s" onclick="qty(${k},-1)">−</button><b>${l.q}</b><button class="s" onclick="qty(${k},1)">+</button></span></div>`).join('')||'<p class="m">پسووڵە بەتاڵە — دەرمانێک زیاد بکە</p>')+
+`<div class="r"><select onchange="custI=this.value;ctr();cpost()"><option value="">کڕیاری ئاسایی</option>${db.cust.map((c,i)=>`<option value="${i}" ${custI==i&&custI!==''?'selected':''}>${c.n}${c.disc?' ('+c.disc+'%)':''}</option>`).join('')}</select></div>
+<div class="r"><input type="number" placeholder="داشکان" value="${dval||''}" onchange="dval=+this.value;ctr();cpost()"><select onchange="dtype=this.value;ctr();cpost()"><option ${dtype=='%'?'selected':''}>%</option><option ${dtype!='%'?'selected':''} value="n">بڕی نەقد</option></select></div>
+<div class="r"><select onchange="pay=this.value;ctr()"><option value="cash" ${pay=='cash'?'selected':''}>نەقد</option><option value="card" ${pay=='card'?'selected':''}>کارتی بانکی</option><option value="both" ${pay=='both'?'selected':''}>هەردووکیان</option><option value="debt" ${pay=='debt'?'selected':''}>قەرز</option></select>${pay=='both'?`<input type="number" placeholder="بڕی نەقد" value="${cashAmt||''}" onchange="cashAmt=+this.value">`:''}</div>
+<p>کۆ: ${fm(sub())}${disc()?` — داشکان: ${fm(disc())}`:''}</p><div class="tot">${fm(t)}</div><button class="b" style="width:100%;margin-top:8px" onclick="checkout()" ${cart.length?'':'disabled'}>پارەدان و چاپی پسووڵە</button>`}
+function qty(k,d){const l=cart[k],i=db.items.find(x=>x.id==l.id);l.q+=d;if(i&&l.q>i.q)l.q=i.q;if(l.q<=0)cart.splice(k,1);ctr();cpost()}
+function checkout(){const t=total(),c=db.cust[custI];let cash=0,card=0,debt=0;
+if(pay=='cash')cash=t;else if(pay=='card')card=t;else if(pay=='both'){cash=Math.min(cashAmt,t);card=t-cash}else{if(!c)return alert('بۆ فرۆشتنی قەرز کڕیارێک هەڵبژێرە (لە بەشی قەرز زیادی بکە)');debt=t}
+cart.forEach(l=>{const i=db.items.find(x=>x.id==l.id);if(i)i.q-=l.q});
+const s={id:db.nid++,d:today(),t:new Date().toLocaleTimeString('en-GB'),by:U,lines:cart.map(l=>({...l})),disc:disc(),total:t,cash,card,debt,cust:c?c.n:'',ret:0};
+if(c&&debt)c.debt=(c.debt||0)+debt;db.sales.push(s);log('فرۆشتن #'+s.id+' — '+fm(t));save();cart=[];dval=0;custI='';cashAmt=0;rcpt(s.id);draw()}
+function rcpt(id){const s=db.sales.find(x=>x.id==id);const o=document.createElement('div');o.className='ov';
+o.innerHTML=`<div><div id="rc">دەرمانخانە\nپسووڵە #${s.id}   ${s.d} ${s.t}\nکاشێر: ${s.by=='owner'?'خاوەن':'کاشێر'}\n--------------------\n${s.lines.map(l=>`${l.n}\n  ${l.q} × ${l.p} = ${l.q*l.p}`).join('\n')}\n--------------------\n${s.disc?'داشکان: '+Math.round(s.disc)+'\n':''}کۆی گشتی: ${Math.round(s.total)} د.ع\nنەقد: ${Math.round(s.cash)} | کارت: ${Math.round(s.card)}${s.debt?' | قەرز: '+Math.round(s.debt):''}${s.cust?'\nکڕیار: '+s.cust:''}\nسوپاس بۆ هاتنتان</div><div class="r" style="margin-top:10px"><button class="b" onclick="window.print()">چاپکردن</button><button class="s" onclick="this.closest('.ov').remove()">داخستن</button></div></div>`;document.body.appendChild(o)}
+function retn(id){if(!confirm('ئەم پسووڵەیە بگەڕێندرێتەوە؟'))return;const s=db.sales.find(x=>x.id==id);s.ret=1;s.lines.forEach(l=>{const i=db.items.find(x=>x.id==l.id);if(i)i.q+=l.q});if(s.debt){const c=db.cust.find(x=>x.n==s.cust);if(c)c.debt-=s.debt}log('گەڕاندنەوەی پسووڵە #'+id);save();draw()}
+function vStock(){const o=isOwner(),lim=new Date(Date.now()+90*864e5).toISOString().slice(0,10);
+const ex=db.items.filter(i=>i.ex<=lim),lo=db.items.filter(i=>i.q<=i.min);
+$('#v').innerHTML=`${ex.length||lo.length?`<div class="c" style="margin-bottom:12px"><h3>ئاگادارکردنەوە</h3>${ex.map(i=>`<div class="${i.ex<today()?'bad':'warn'}">${i.n} — بەرواری بەسەرچوون: ${i.ex}</div>`).join('')}${lo.map(i=>`<div class="warn">${i.n} — کەمە (${i.q}) — داوای نوێ بکە</div>`).join('')}</div>`:''}
+${o?`<div class="c" style="margin-bottom:12px"><h3>زیادکردنی دەرمان</h3><div class="r"><input id="n" placeholder="ناوی تجاری"><input id="s" placeholder="ناوی زانستی"><input id="bc" placeholder="بارکۆد"></div><div class="r"><select id="cat"><option>حەب</option><option>شرووب</option><option>دەرزی</option><option>مەرهەم</option><option>ڤیتامین</option><option>کەلوپەلی جوانکاری</option></select><input id="buy" type="number" placeholder="نرخی کڕین"><input id="p" type="number" placeholder="نرخی فرۆشتن"></div><div class="r"><input id="q" type="number" placeholder="بڕ"><input id="min" type="number" placeholder="ئاستی کەمبوون"><input id="ex" type="date"></div><label><input type="checkbox" id="c" style="width:auto"> دەرمانی کۆنتڕۆڵکراو (سڕکەر / هۆشبەر)</label><br><button class="b" onclick="addItem()">خەزنکردن</button></div>`:''}
+<div class="c"><h3>دەرمانەکان (${db.items.length})</h3><div style="overflow-x:auto"><table><tr><th>ناو</th><th>جۆر</th><th>بڕ</th><th>نرخ</th>${o?'<th>کڕین</th>':''}<th>بەسەرچوون</th>${o?'<th></th>':''}</tr>${db.items.map(i=>`<tr><td>${i.n}${i.c?' 🔒':''}</td><td>${i.cat}</td><td class="${i.q<=i.min?'warn':''}">${i.q}</td><td>${o?`<input type="number" value="${i.p}" style="width:80px" onchange="db.items.find(x=>x.id==${i.id}).p=+this.value;log('گۆڕینی نرخ: ${i.n}');save()">`:fm(i.p)}</td>${o?`<td>${fm(i.buy)}</td>`:''}<td>${i.ex}</td>${o?`<td><button class="s" onclick="restock(${i.id})">+بڕ</button> <button class="s d" onclick="delItem(${i.id})">سڕینەوە</button></td>`:''}</tr>`).join('')}</table></div></div>`}
+function addItem(){const g=k=>$('#'+k).value;if(!g('n')||!g('p'))return alert('ناو و نرخ پێویستە');db.items.push({id:db.nid++,n:g('n'),s:g('s'),bc:g('bc'),cat:g('cat'),buy:+g('buy'),p:+g('p'),q:+g('q'),min:+g('min')||5,ex:g('ex')||'2030-01-01',c:$('#c').checked?1:0});log('دەرمانی نوێ: '+g('n'));save();draw()}
+function restock(id){const n=+prompt('چەند دانە زیاد بکرێت؟');if(n>0){const i=db.items.find(x=>x.id==id);i.q+=n;log('زیادکردنی بڕ: '+i.n+' +'+n);save();draw()}}
+function delItem(id){if(confirm('دەرمانەکە بسڕدرێتەوە؟')){const i=db.items.find(x=>x.id==id);log('سڕینەوەی دەرمان: '+i.n);db.items=db.items.filter(x=>x.id!=id);save();draw()}}
+function vDebt(){$('#v').innerHTML=`<div class="g g2"><div class="c"><h3>کڕیار / نەخۆش زیاد بکە</h3><input id="cn" placeholder="ناو"><input id="cp" placeholder="ژمارەی تەلەفۆن"><input id="cd" type="number" placeholder="داشکانی هەمیشەیی % (کارتی ئەندامێتی)"><button class="b" onclick="db.cust.push({n:$('#cn').value,ph:$('#cp').value,disc:+$('#cd').value||0,debt:0});save();draw()">زیادکردن</button></div>
+<div class="c"><h3>ڕاپۆرتی قەرزەکان</h3>${db.cust.map((c,i)=>`<div class="it"><span>${c.n}${c.disc?` <span class="m">(${c.disc}%)</span>`:''}<br><b class="${c.debt>0?'bad':''}">${fm(c.debt||0)}</b></span>${c.debt>0?`<button class="s" onclick="payDebt(${i})">وەرگرتنی پارە</button>`:''}</div>`).join('')||'<p class="m">کڕیار نییە</p>'}<p class="tot">کۆی قەرز: ${fm(db.cust.reduce((a,c)=>a+(c.debt||0),0))}</p></div></div>`}
+function payDebt(i){const n=+prompt('بڕی وەرگیراو:');if(n>0){db.cust[i].debt-=n;log('پارەی قەرز لە '+db.cust[i].n+': '+n);save();draw()}}
+function vSup(){$('#v').innerHTML=`<div class="g g2"><div class="c"><h3>کۆمپانیا زیاد بکە</h3><input id="sn" placeholder="ناوی کۆمپانیا"><input id="sp" placeholder="ژمارەی تەلەفۆن"><input id="sr" placeholder="ناوی فرۆتۆک"><button class="b" onclick="db.sup.push({n:$('#sn').value,p:$('#sp').value,r:$('#sr').value,h:[]});save();draw()">زیادکردن</button></div>
+<div class="c"><h3>کۆمپانیاکان</h3>${db.sup.map((s,i)=>`<div class="it"><span>${s.n}<br><span class="m">${s.r} · ${s.p}</span>${s.h.map(h=>`<br><span class="m">${h}</span>`).join('')}</span><button class="s" onclick="var t=prompt('تۆماری کڕین (بەروار — بڕ):');if(t){db.sup[${i}].h.push(t);save();draw()}">+ کڕین</button></div>`).join('')||'<p class="m">کۆمپانیا نییە</p>'}</div></div>`}
+function stat(from){const S=db.sales.filter(s=>!s.ret&&s.d>=from);let rev=0,pr=0;S.forEach(s=>{const sb=s.lines.reduce((a,l)=>a+l.p*l.q,0)||1;rev+=s.total;pr+=s.lines.reduce((a,l)=>a+(l.p-l.b)*l.q,0)-s.disc});const e=db.exp.filter(x=>x.d>=from).reduce((a,x)=>a+x.a,0);return{rev,pr,e,net:pr-e,n:S.length}}
+function vRep(){const t=stat(today()),m=stat(today().slice(0,8)+'01'),cnt={};db.sales.filter(s=>!s.ret).forEach(s=>s.lines.forEach(l=>cnt[l.n]=(cnt[l.n]||0)+l.q));
+const best=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5),sold=new Set(Object.keys(cnt)),dead=db.items.filter(i=>!sold.has(i.n)).slice(0,5);
+const box=(h,x)=>`<div class="c"><h3>${h}</h3><p>فرۆشتن: <b>${fm(x.rev)}</b> (${x.n} پسووڵە)<br>قازانجی ڕاستەقینە: <b>${fm(x.pr)}</b><br>خەرجی: <b class="bad">${fm(x.e)}</b><br>قازانجی پوخت: <b class="tot">${fm(x.net)}</b></p></div>`;
+$('#v').innerHTML=`<div class="g g2">${box('ئەمڕۆ',t)}${box('ئەم مانگە',m)}</div><div class="g g2" style="margin-top:12px"><div class="c"><h3>خەرجییەکان</h3><div class="r"><input id="en" placeholder="جۆر (کرێ، کارەبا، مووچە...)"><input id="ea" type="number" placeholder="بڕ"></div><button class="b" onclick="addExp()">تۆمارکردن</button>${db.exp.slice(-5).reverse().map(x=>`<div class="it"><span>${x.n} <span class="m">${x.d}</span></span><b>${fm(x.a)}</b></div>`).join('')}<button class="s" style="margin-top:10px" onclick="alert('داخستنی شیفت\\nداهاتی ئەمڕۆ: ${fm(t.rev).replace(/'/g,'')}\\nنەقد: ${fm(db.sales.filter(s=>!s.ret&&s.d==today()).reduce((a,s)=>a+s.cash,0))}\\nکارت: ${fm(db.sales.filter(s=>!s.ret&&s.d==today()).reduce((a,s)=>a+s.card,0))}');log('داخستنی شیفت')">داخستنی شیفت</button></div>
+<div class="c"><h3>پڕفرۆشترین</h3>${best.map(b=>`<div class="it"><span>${b[0]}</span><b>${b[1]}</b></div>`).join('')||'<p class="m">داتا نییە</p>'}<h3 style="margin-top:12px">نەفرۆشراو (پارە لەسەر سارد بووەتەوە)</h3>${dead.map(i=>`<div class="m">${i.n} — ${i.q} دانە</div>`).join('')}</div></div>`}
+function addExp(){const a=+$('#ea').value;if(!a)return;db.exp.push({d:today(),n:$('#en').value||'خەرجی',a});log('خەرجی: '+a);save();draw()}
+function vSet(){$('#v').innerHTML=`<div class="g g2"><div class="c"><h3>کۆدی نهێنی</h3><input id="po" placeholder="کۆدی نوێی خاوەن"><input id="pc" placeholder="کۆدی نوێی کاشێر"><button class="b" onclick="if($('#po').value)db.pin.owner=$('#po').value;if($('#pc').value)db.pin.cash=$('#pc').value;save();alert('گۆڕدرا')">گۆڕین</button>
+<h3 style="margin-top:14px">پاشەکەوت (Backup)</h3><p class="m">خۆکار هەموو ڕۆژێک لە ئامێرەکەدا پاشەکەوت دەکرێت. بۆ پاراستنی زیاتر، ئەم دەقە کۆپی بکە و لە شوێنێکی سەلامەت هەڵیبگرە.</p><textarea id="bk" rows="4" readonly>${JSON.stringify(db).replace(/</g,'&lt;')}</textarea><button class="s" onclick="$('#bk').select();document.execCommand('copy')">کۆپی</button>
+<textarea id="im" rows="2" placeholder="لێرە پاشەکەوتەکە بلکێنە بۆ گەڕاندنەوە"></textarea><button class="s" onclick="try{db=JSON.parse($('#im').value);save();alert('گەڕێندرایەوە');draw()}catch(e){alert('دەقەکە هەڵەیە')}">گەڕاندنەوە</button></div>
+<div class="c"><h3>تۆماری چالاکی کارمەندان</h3>${db.log.slice(0,60).map(l=>`<div class="m">${l.t} — ${l.u=='owner'?'خاوەن':'کاشێر'}: ${l.a}</div>`).join('')}</div></div>`}
+function cpost(){try{bc&&bc.postMessage({l:cart.map(l=>[l.n,l.q,l.p]),t:total()})}catch(e){}}
+function openCust(){window.open(location.href.split('#')[0]+'#customer','_blank')}
+function cdraw(d){d=d||{l:[],t:0};A.innerHTML=`<main class="cd"><h3>دەرمانخانە</h3>${d.l.map(x=>`<div class="it"><span>${x[0]} × ${x[1]}</span><b>${fm(x[1]*x[2])}</b></div>`).join('')||'<p class="m">بەخێربێن</p>'}<div class="tot">${fm(d.t)}</div></main>`}
+if(location.hash=='#customer'){cdraw();if(bc)bc.onmessage=e=>cdraw(e.data)}else draw();
+</script></body></html>
